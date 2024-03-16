@@ -4,6 +4,9 @@ import numpy as np
 
 def HOG(image):
 
+    # Convert to grayscale
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)  # channel 3 to 1
+
     # HOG descriptor
     winSize = (64, 64)
     blockSize = (16, 16)
