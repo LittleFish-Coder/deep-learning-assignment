@@ -3,3 +3,4 @@
 *.zip
 *.ipynb_checkpoints
 Assignment_1/TinyImageNet/TIN/
+__pycache__
