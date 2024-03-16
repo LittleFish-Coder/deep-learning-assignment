@@ -74,6 +74,14 @@ def SIFT(image):
     return keypoints, descriptors
 
 
+# normalize the feature to a fiexd dimension: bag-of-words
+def BOW(feature):
+    # feature: a numpy array of shape number_of_keypoints * 128
+    # return a numpy array of shape 1 * 128
+
+    return np.mean(feature, axis=0)
+
+
 # debug
 # image = cv2.imread("TIN/n01774384/images/n01774384_5.JPEG")
 # image = cv2.resize(image, (256, 256))
