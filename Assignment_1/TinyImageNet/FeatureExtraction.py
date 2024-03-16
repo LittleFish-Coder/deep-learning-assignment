@@ -59,11 +59,30 @@ def ColorHistogram(image, bins=(8, 8, 8)):
     return hist
 
 
+def SIFT(image):
+
+    # Convert to grayscale
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+    # SIFT descriptor
+    sift = cv2.SIFT_create()
+    keypoints, descriptors = sift.detectAndCompute(image, None)
+
+    # keypoints: a list of keypoints
+    # descriptors: a numpy array of shape number_of_keypoints * 128
+
+    return keypoints, descriptors
+
+
 # debug
-# image = cv2.imread("TIN/n01774384/images/n01774384_4.JPEG")
+# image = cv2.imread("TIN/n01774384/images/n01774384_5.JPEG")
 # image = cv2.resize(image, (256, 256))
-# image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 # features = HOG(image)
 # features = ColorHistogram(image)
 # print(features.shape)
 # print(features)
+# keypoints, descriptors = SIFT(image)
+# print(descriptors.shape)
+# print(descriptors[0])
+# print(keypoints)
+# print(len(keypoints))
