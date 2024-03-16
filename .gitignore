@@ -1,1 +1,5 @@
 .DS_Store
+*.rar
+*.zip
+*.ipynb_checkpoints
+Assignment_1/TinyImageNet/TIN/
