@@ -59,13 +59,13 @@ def load_img(f):
         ==============================="""
 
         # feature extraction from FeatureExtraction.py
-        # im1 = HOG(im1)
+        im1 = HOG(im1)
         # im1 = ColorHistogram(im1)
         # keypoints, im1 = SIFT(im1)
-        vec = np.reshape(im1, [-1])
+        # vec = np.reshape(im1, [-1])
         # print(vec.shape)
-        imgs.append(vec)
-        lab.append(int(label))
+        # imgs.append(vec)
+        # lab.append(int(label))
 
     imgs = np.asarray(imgs, np.float32)
     lab = np.asarray(lab, np.int32)
