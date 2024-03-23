@@ -38,7 +38,8 @@ def prepare_data():
 # prepare_data()  # data preparation (1 time only)
 
 
-def resize_img(img, size=(256, 256)):
+# downsample image to 32x32 for faster processing
+def resize_img(img, size=(32, 32)):
     img = cv2.imread(img)
     img = cv2.resize(img, size)
     return img
@@ -61,8 +62,6 @@ def load_img(f):
         # im1 = HOG(im1)
         # im1 = ColorHistogram(im1)
         # keypoints, im1 = SIFT(im1)
-
-        # print(im1.shape)
         vec = np.reshape(im1, [-1])
         # print(vec.shape)
         imgs.append(vec)
