@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+from sklearn.cluster import KMeans
 
 
 def HOG(image):
@@ -79,12 +80,37 @@ def SIFT(image):
     return keypoints, descriptors
 
 
-# normalize the feature to a fiexd dimension: bag-of-words
-def BOW(feature):
-    # feature: a numpy array of shape number_of_keypoints * 128
-    # return a numpy array of shape 1 * 128
+def build_vocabulary(descriptors, k=100):
+    """
+    Build a visual vocabulary using k-means clustering on SIFT descriptors.
 
-    return np.mean(feature, axis=0)
+    Args:
+        descriptors (list): List of SIFT descriptors from all training images.
+        k (int): Number of visual words (cluster centers).
+
+    Returns:
+        numpy.ndarray: Visual words (cluster centers).
+    """
+    descriptors_array = np.vstack(descriptors)
+    kmeans = KMeans(n_clusters=k, random_state=42)
+    kmeans.fit(descriptors_array)
+    return kmeans
+
+
+def bow_encoding(descriptors, visual_words):
+    """
+    Perform bag-of-words encoding using SIFT descriptors and visual words.
+
+    Args:
+        descriptors (numpy.ndarray): SIFT descriptors from an image.
+        visual_words (numpy.ndarray): Visual words (cluster centers).
+
+    Returns:
+        numpy.ndarray: Bag-of-words histogram.
+    """
+    visual_words.predict(descriptors)
+    histogram = np.bincount(visual_words.labels_, minlength=visual_words.n_clusters)
+    return histogram
 
 
 # debug

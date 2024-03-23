@@ -5,7 +5,7 @@
 import os
 import numpy as np
 from numpy import linalg as LA
-from FeatureExtraction import HOG, ColorHistogram, SIFT
+from FeatureExtraction import HOG, ColorHistogram, SIFT, build_vocabulary, bow_encoding
 import cv2
 
 
@@ -45,10 +45,25 @@ def resize_img(img, size=(32, 32)):
     return img
 
 
-def load_img(f):
+def load_img(f, method="HOG"):
     f = open(f)
     lines = f.readlines()
     imgs, lab = [], []
+    all_descriptors = []  # for SIFT
+
+    if method == "SIFT":
+        print("start SIFT")
+        for i in range(len(lines)):
+            fn, label = lines[i].split(" ")
+            im1 = resize_img(fn)
+            _, descriptors = SIFT(im1)
+            if descriptors is not None:
+                all_descriptors.append(descriptors)
+        print("SIFT done")
+
+        # Build visual vocabulary
+        visual_words = build_vocabulary(all_descriptors)
+
     for i in range(len(lines)):
         fn, label = lines[i].split(" ")
         im1 = resize_img(fn)
@@ -57,23 +72,29 @@ def load_img(f):
         影像處理的技巧可以放這邊，來增強影像的品質
         
         ==============================="""
-
         # feature extraction from FeatureExtraction.py
-        im1 = HOG(im1)
-        # im1 = ColorHistogram(im1)
-        # keypoints, im1 = SIFT(im1)
-        # vec = np.reshape(im1, [-1])
-        # print(vec.shape)
-        # imgs.append(vec)
-        # lab.append(int(label))
+        if method == "HOG":
+            im1 = HOG(im1)
+        elif method == "ColorHistogram":
+            im1 = ColorHistogram(im1)
+        elif method == "SIFT":
+            keypoints, im1 = SIFT(im1)
+            if im1 is not None:
+                im1 = bow_encoding(im1, visual_words)
+
+        if im1 is not None:
+            # print(im1.shape)
+            im1 = im1.flatten()
+            imgs.append(im1)
+            lab.append(int(label))
 
     imgs = np.asarray(imgs, np.float32)
     lab = np.asarray(lab, np.int32)
     return imgs, lab
 
 
-x, y = load_img("train.txt")
-tx, ty = load_img("test.txt")
+# x, y = load_img("train.txt")
+# tx, ty = load_img("test.txt")
 
 
 # ======================================
@@ -115,8 +136,16 @@ if __name__ == "__main__":
     # prepare_data()
 
     # data transformation (feature extraction)
-    # x, y = load_img("train.txt")
-    # tx, ty = load_img("test.txt")
+    # x, y = load_img("train.txt", method="SIFT")
+    # print(x.shape)
+    # print(x[0])
+    # print(y.shape)
+    # print(y[0])
+    # tx, ty = load_img("test.txt", method="SIFT")
+    # print(tx.shape)
+    # print(tx[0])
+    # print(ty.shape)
+    # print(ty[0])
 
     print("start training")
     # training
