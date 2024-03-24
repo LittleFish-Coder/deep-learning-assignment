@@ -7,6 +7,12 @@ import numpy as np
 from numpy import linalg as LA
 from FeatureExtraction import HOG, ColorHistogram, SIFT, build_vocabulary, bow_encoding
 import cv2
+from sklearn.svm import SVC
+from sklearn.model_selection import train_test_split
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import classification_report, accuracy_score, f1_score
+import time
 
 
 def prepare_data():
@@ -33,9 +39,6 @@ def prepare_data():
     f2.close()
 
     print("data spliting done")
-
-
-# prepare_data()  # data preparation (1 time only)
 
 
 # downsample image to 32x32 for faster processing
@@ -93,10 +96,6 @@ def load_img(f, method="HOG"):
     return imgs, lab
 
 
-# x, y = load_img("train.txt")
-# tx, ty = load_img("test.txt")
-
-
 # ======================================
 # X就是資料，Y是Label，請設計不同分類器來得到最高效能
 # 必須要計算出分類的正確率
@@ -104,9 +103,6 @@ def load_img(f, method="HOG"):
 
 
 def KNN(x, y):
-    from sklearn.neighbors import KNeighborsClassifier
-    from sklearn.metrics import accuracy_score
-
     print("start KNN")
     model = KNeighborsClassifier(n_neighbors=5)
     model.fit(x, y)
@@ -115,18 +111,40 @@ def KNN(x, y):
 
 
 def SVM(x, y):
-    from sklearn.svm import SVC
-    from sklearn.metrics import accuracy_score
-
     print("start SVM")
-    model = SVC(kernel="linear")
+    model = SVC(kernel="rbf", C=1.0, gamma="scale", random_state=42)
     model.fit(x, y)
     print("SVM training done")
     return model
 
 
-def CNN_Method():
-    return None
+def RandomForest(x, y):
+    print("start Random Forest")
+    model = RandomForestClassifier(n_estimators=100, random_state=42)
+    model.fit(x, y)
+    print("Random Forest training done")
+    return model
+
+
+def train(x, y, model="SVM"):
+    if model == "KNN":
+        model = KNN(x, y)
+    elif model == "SVM":
+        model = SVM(x, y)
+    elif model == "RandomForest":
+        model = RandomForest(x, y)
+    return model
+
+
+def test(x, y, model):
+    y_pred = model.predict(x)
+    accuracy = accuracy_score(y, y_pred)
+    f1 = f1_score(y, y_pred, average="weighted")
+    classification = classification_report(y, y_pred)
+    print(f"Accuracy: {accuracy}")
+    print(f"F1 Score: {f1}")
+    print(f"Classification Report: {classification}")
+    return accuracy, f1, classification
 
 
 # main
@@ -135,22 +153,53 @@ if __name__ == "__main__":
     # data preparation
     # prepare_data()
 
-    # data transformation (feature extraction)
+    methods = ["HOG", "ColorHistogram", "SIFT"]
+    models = ["KNN", "SVM", "RandomForest"]
+
+    for method in methods:
+        method_start = time.time()  # start method
+        print(f"Method: {method}")
+        # load data
+        x, y = load_img("train.txt", method=method)
+        tx, ty = load_img("test.txt", method=method)
+        # print(x.shape)    # (number of images, number of features)
+        # print(y.shape)    # (number of labels of images)
+        # print(tx.shape)
+        # print(ty.shape)
+
+        method_end = time.time()  # end method
+        method_time = method_end - method_start  # method time
+
+        for model_name in models:
+            model_start = time.time()  # start model
+            print(f"Model: {model_name}")
+            # training
+            model = train(x, y, model=model_name)
+            # testing
+            accuracy, f1, classification = test(tx, ty, model)
+            model_end = time.time()  # end model
+            model_time = model_end - model_start  # model time
+
+            # write to log
+            with open("log.txt", "a") as f:
+                f.write(f"Method: {method}, Model: {model_name}\n")
+                f.write(f"Method Time: {method_time}\n")
+                f.write(f"Model Time: {model_time}\n")
+                f.write(f"Total Time: {method_time + model_time} seconds\n")
+                f.write(f"Accuracy: {accuracy}\n")
+                f.write(f"F1 Score: {f1}\n")
+                f.write(f"Classification Report: {classification}\n")
+                f.write("\n")
+
+    # load data
     # x, y = load_img("train.txt", method="SIFT")
-    # print(x.shape)
-    # print(x[0])
-    # print(y.shape)
-    # print(y[0])
-    # tx, ty = load_img("test.txt", method="SIFT")
+    # tx, ty = load_img("test.txt", method="ColorHistogram")
+    # print(x.shape)    # (number of images, number of features)
+    # print(y.shape)    # (number of labels of images)
     # print(tx.shape)
-    # print(tx[0])
     # print(ty.shape)
-    # print(ty[0])
 
-    print("start training")
     # training
-    # model = train(x, y)
-
+    # model = train(tx, ty, model="RandomForest")
     # testing
-    # test(model, tx, ty)
-    print("done")
+    # test(tx, ty, model)
